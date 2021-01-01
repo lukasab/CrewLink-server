@@ -9,7 +9,7 @@ import morgan from 'morgan';
 import peerConfig  from './peerConfig';
 import { ICEServer } from './ICEServer';
 
-const supportedCrewLinkVersions = new Set(['1.2.0']);
+const supportedCrewLinkVersions = new Set(['1.2.0', '1.2.1']);
 const httpsEnabled = !!process.env.HTTPS;
 
 const port = process.env.PORT || (httpsEnabled ? '443' : '9736');
