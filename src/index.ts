@@ -6,12 +6,10 @@ import { join } from 'path';
 import socketIO from 'socket.io';
 import Tracer from 'tracer';
 import morgan from 'morgan';
-import TurnServer from 'node-turn';
-import crypto from 'crypto';
 import peerConfig  from './peerConfig';
 import { ICEServer } from './ICEServer';
 
-const supportedCrewLinkVersions = new Set(['1.2.0', '0.0.0']);
+const supportedCrewLinkVersions = new Set(['1.2.0']);
 const httpsEnabled = !!process.env.HTTPS;
 
 const port = process.env.PORT || (httpsEnabled ? '443' : '9736');
@@ -21,11 +19,6 @@ const sslCertificatePath = process.env.SSLPATH || process.cwd();
 const logger = Tracer.colorConsole({
 	format: "{{timestamp}} <{{title}}> {{message}}"
 });
-
-const turnLogger = Tracer.colorConsole({
-	format: "{{timestamp}} <{{title}}> <ice> {{message}}",
-	level: peerConfig.integratedRelay.debugLevel.toLowerCase()
-})
 
 const app = express();
 let server: HttpsServer | Server;
@@ -38,21 +31,10 @@ if (httpsEnabled) {
 	server = new Server(app);
 }
 
-let turnServer: TurnServer | null = null;
-if (peerConfig.integratedRelay.enabled) {
-	turnServer = new TurnServer({
-		minPort: peerConfig.integratedRelay.minPort,
-		maxPort: peerConfig.integratedRelay.maxPort,
-		listeningPort: peerConfig.integratedRelay.listeningPort,
-		authMech: 'long-term',
-		debugLevel: peerConfig.integratedRelay.debugLevel,
-		realm: 'crewlink',
-		debug: (level, message) => {
-			turnLogger[level.toLowerCase()](message)
-		}
-	})
-	
-	turnServer.start();
+let address = process.env.ADDRESS;
+if (!address) {
+	logger.error('You must set the ADDRESS environment variable.');
+	process.exit(1);
 }
 
 const io = socketIO(server);
@@ -78,11 +60,6 @@ app.set('view engine', 'pug');
 app.use(morgan('combined'));
 
 let connectionCount = 0;
-let address = process.env.ADDRESS;
-if (!address) {
-	logger.error('You must set the ADDRESS environment variable.');
-	process.exit(1);
-}
 
 app.get('/', (_, res) => {
 	res.render('index', { connectionCount, address });
@@ -123,17 +100,6 @@ io.on('connection', (socket: socketIO.Socket) => {
 	const clientPeerConfig: ClientPeerConfig = {
 		forceRelayOnly: peerConfig.forceRelayOnly,
 		iceServers: peerConfig.iceServers? [...peerConfig.iceServers] : []
-	}
-
-	if (turnServer) {
-		const turnCredential = crypto.randomBytes(32).toString('base64');
-		turnServer.addUser(socket.id, turnCredential);
-		logger.info(`Adding socket "${socket.id}" as TURN user.`)
-		clientPeerConfig.iceServers.push({
-			urls: `turn:${address}:${peerConfig.integratedRelay.listeningPort}`,
-			username: socket.id,
-			credential: turnCredential
-		});
 	}
 
 	socket.emit('clientPeerConfig', clientPeerConfig);
@@ -211,13 +177,6 @@ io.on('connection', (socket: socketIO.Socket) => {
 	socket.on('disconnect', () => {
 		clients.delete(socket.id);
 		connectionCount--;
-		logger.info("Total connected: %d", connectionCount);
-
-		if (turnServer) {
-			logger.info(`Removing socket "${socket.id}" as TURN user.`)
-			turnServer.removeUser(socket.id);
-		}
-
 		logger.info("Total connected: %d", connectionCount);
 	})
 });

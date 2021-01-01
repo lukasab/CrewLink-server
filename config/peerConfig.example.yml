@@ -4,27 +4,15 @@
 #
 # This file lets you modify how CrewLink connects players to each other.
 #
-# CrewLink uses peer to peer connections to establish voice calls between players. This means that every player has to
-# be able to connect to every other player some way or another in order for CrewLink to work. Below you can tweak the
-# mechanisms CrewLink uses to establish peer to peer connections.
+# CrewLink uses peer to peer connections to send voice and game state data between players. This means that every player
+# has to be able to connect to every other player some way or another in order for CrewLink to work. Below you can tweak
+# the mechanisms CrewLink uses to establish peer to peer connections.
 
 # Force CrewLink to only work through TURN servers. This is great if you want to protect the IP addresses of players
 # as no direct connection will be made. At least one TURN server is required if set to true.
 forceRelayOnly: false
 
-# Settings for the built-in TURN server.
-integratedRelay:
-  enabled: true # Use the-built in relay server if you run a small-scale server for private use.
-  minPort: 49152
-  maxPort: 65535
-  listeningPort: 3478
-  # Can be one of: OFF, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL
-  debugLevel: 'INFO'
-
-# If you run into performance issues, you may want to look into offloading relay duties to a native TURN/STUN
-# implementation. You can configure them below.
-
-# Custom TURN/STUN servers
+# If you run into connection issues, you may want to add your own TURN server here.
 iceServers:
   # Google's STUN server is used by default
   - urls: 'stun:stun.l.google.com:19302'
