@@ -13,6 +13,6 @@
 		}
 	},
 	"include": [
-		"src/**/*", "types/node-turn/index.d.ts"
+		"src/**/*"
 	]
 }
