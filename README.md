@@ -117,13 +117,25 @@ yarn start
 CrewLink-server should work out of the box for most people. You may, however, come across people who are unable to hear 
 other people, no matter what they try. This could be because of a NAT or firewall that is preventing peer to peer
 connections. In this case you may want to set up your own relay server to act as a middleman for your voice traffic.
-CrewLink needs a specific type of server for this called a TURN server. As of yet CrewLink does not come with one by
-default. 
+CrewLink needs a specific type of server for this called a TURN server.
 
 You can configure a TURN server by creating a file called ``peerConfig.yml`` in the config folder. Use the
 provided example as a template. A good, open source TURN server implementation is 
 [Coturn](https://github.com/coturn/coturn). A relay server may also be desirable in case you want to prevent CrewLink 
 players from detecting the IP addresses of everyone in the same Among Us room using your voice server.
+
+CAUTION: Hosting your own TURN server is a great way to solve most connection issues but they're not without problems.
+These servers, by design, let anyone with the credentials relay packets to anywhere. Because you are sending the TURN 
+credentials to everyone connecting to your CrewLink server, obtaining them becomes very easy. If you choose to set one 
+up, make sure you:
+  - Know what you're doing
+  - Configure the server in a way that disallows relaying packets to places that make no sense (localhost, private networks, etc)
+  - Consider limiting the bandwidth per user and across the whole TURN server
+  - Keep an eye on TURN server activity while you're running one
+  - Change TURN credentials regularly
+  - This list is not exhaustive, see point 1
+
+It is because of this that you should only deploy a TURN server for small, private CrewLink servers.
 <!-- CONTRIBUTING -->
 ## Contributing
 

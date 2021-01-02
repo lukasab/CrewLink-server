@@ -13,6 +13,17 @@
 forceRelayOnly: false
 
 # If you run into connection issues, you may want to add your own TURN server here.
+#
+# CAUTION: Hosting your own TURN server is a great way to solve most connection issues but they're not without problems.
+# These servers, by design, let anyone with the credentials relay packets to anywhere. Because you are sending the TURN 
+# credentials to everyone connecting to your CrewLink server, obtaining them becomes very easy. If you choose to set one 
+# up, make sure you:
+#    - Know what you're doing
+#    - Configure the server in a way that disallows relaying packets to places that make no sense (localhost, private networks, etc)
+#    - Consider limiting the bandwidth per user and across the whole TURN server
+#    - Keep an eye on TURN server activity while you're running one
+#    - Change TURN credentials regularly
+#    - This list is not exhaustive, see point 1
 iceServers:
   # Google's STUN server is used by default
   - urls: 'stun:stun.l.google.com:19302'
